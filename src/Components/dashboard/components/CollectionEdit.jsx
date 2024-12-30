@@ -1,166 +1,325 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { IoClose } from "react-icons/io5";
-import { FaTrash, FaPlus } from "react-icons/fa";
-import demoImage from "../../../assets/images/logo.jpg";
-import demoImage2 from "../../../assets/images/logo-background-removed.png";
-import demoImage3 from "../../../assets/images/heroBackGroundCar.jpg";
-import demoImage4 from "../../../assets/images/team.jpg";
+import { FaTrash, FaPlus, FaImage } from "react-icons/fa";
+import { useGallery } from "../../../context/galaryContext";
+import { useUpdateGallery } from "../../../context/updatGallery";
 
 const CollectionEdit = ({ collection, onClose, isNew = false }) => {
-  const [title, setTitle] = useState(collection?.title || "");
-  const [description, setDescription] = useState(collection?.description || "");
-  const [images, setImages] = useState(
-    collection?.images || [
-      { id: 1, url: demoImage },
-      { id: 2, url: demoImage2 },
-      { id: 3, url: demoImage3 },
-      { id: 4, url: demoImage4 },
-      { id: 5, url: demoImage },
-      { id: 6, url: demoImage },
-      { id: 7, url: demoImage2 },
-      { id: 8, url: demoImage3 },
-      { id: 9, url: demoImage4 },
-    ]
+  const [title, setTitle] = useState(isNew ? "" : collection.title);
+  const [description, setDescription] = useState(
+    isNew ? "" : collection.description
   );
+  const [coverImage, setCoverImage] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(
+    isNew ? null : collection.coverImage
+  );
+  const [images, setImages] = useState(isNew ? [] : collection.images);
+  const [newImages, setNewImages] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (e) => {
+  const multipleFileInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
+
+  const {
+    deleteSingleImage,
+    deleteSingleStatus,
+    createCollection,
+    createStatus,
+    uploadCollectionImages,
+    uploadStatus,
+  } = useGallery();
+
+  const {
+    updateCollection,
+    updateCollectionStatus,
+    updateCollectionCover,
+    updateCollectionCoverStatus,
+  } = useUpdateGallery();
+
+  const handleCoverImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Here you would typically upload the file to your server
-      // For now, we'll just create a local URL
-      const newImage = {
-        id: images.length + 1,
-        url: URL.createObjectURL(file),
-      };
-      setImages([...images, newImage]);
+      if (file.type.startsWith("image/")) {
+        setCoverImage(file);
+        setCoverImagePreview(URL.createObjectURL(file));
+      } else {
+        setError("Please select an image file for the cover");
+      }
     }
   };
 
-  const handleDeleteImage = (imageId) => {
-    setImages(images.filter((img) => img.id !== imageId));
+  const handleImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
+    if (imageFiles.length !== files.length) {
+      setError("Some files were skipped as they were not images");
+    }
+
+    const newImagePreviews = imageFiles.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setNewImages((prev) => [...prev, ...newImagePreviews]);
   };
 
-  const handleSubmit = (e) => {
+  const handleDeleteNewImage = (previewUrl) => {
+    setNewImages((prev) => prev.filter((img) => img.preview !== previewUrl));
+  };
+
+  const handleDeleteImage = (image) => {
+    if (isNew) {
+      setImages((prev) => prev.filter((img) => img !== image));
+    } else {
+      deleteSingleImage({ id: collection._id, url: image });
+      setImages((prev) => prev.filter((img) => img !== image));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically save changes to your backend
-    console.log("Saving collection:", {
-      title,
-      description,
-      images,
-      isNew,
-    });
-    onClose();
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (!title || !description) {
+        throw new Error("Title and description are required");
+      }
+
+      if (isNew) {
+        if (!coverImage) {
+          throw new Error("Cover image is required for new collections");
+        }
+
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("description", description);
+        formData.append("coverImage", coverImage);
+
+        // Create collection first
+        const collectionData = await createCollection(formData);
+
+        // If there are new images, upload them
+        if (newImages.length > 0) {
+          const imagesFormData = new FormData();
+          newImages.forEach((img) => {
+            imagesFormData.append("images", img.file);
+          });
+          await uploadCollectionImages({
+            id: collectionData._id,
+            formData: imagesFormData,
+          });
+        }
+      } else {
+        // Update existing collection
+        await updateCollection({
+          id: collection._id,
+          updatedCollection: { title, description },
+        });
+
+        if (coverImage) {
+          const coverFormData = new FormData();
+          coverFormData.append("coverImage", coverImage);
+          await updateCollectionCover({
+            id: collection._id,
+            formData: coverFormData,
+          });
+        }
+
+        if (newImages.length > 0) {
+          const imagesFormData = new FormData();
+          newImages.forEach((img) => {
+            imagesFormData.append("images", img.file);
+          });
+          await uploadCollectionImages({
+            id: collection._id,
+            formData: imagesFormData,
+          });
+        }
+      }
+
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-text dark:bg-gray-800 p-6 rounded-lg shadow-md max-w-4xl w-full mx-4 relative max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-primary hover:text-primary/80"
-        >
-          <IoClose className="w-6 h-6" />
-        </button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold">
+            {isNew ? "Create New Collection" : "Edit Collection"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <IoClose className="w-6 h-6" />
+          </button>
 
-        <h2 className="text-2xl font-bold text-primary dark:text-secondary mb-4">
-          {isNew ? "Add New Collection" : `Edit ${collection.title}`}
-        </h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Title
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg"
+                placeholder="Collection Title"
+                required
+              />
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="mb-6">
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-secondary mb-2"
-            >
-              Collection Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary dark:bg-gray-700 dark:text-white"
-              required
-              placeholder="Enter collection title"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg"
+                rows="3"
+                placeholder="Collection Description"
+                required
+              />
+            </div>
 
-          <div className="mb-6">
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-secondary mb-2"
-            >
-              Description
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary dark:bg-gray-700 dark:text-white"
-              placeholder="Enter collection description"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cover Image
+              </label>
+              <div className="flex items-center space-x-4">
+                {coverImagePreview && (
+                  <div className="relative w-32 h-32">
+                    <img
+                      src={coverImagePreview}
+                      alt="Cover Preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCoverImage(null);
+                        setCoverImagePreview(null);
+                      }}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => coverImageInputRef.current?.click()}
+                  className="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  <FaImage className="mr-2" />
+                  {coverImagePreview ? "Change Cover" : "Add Cover"}
+                </button>
+                <input
+                  type="file"
+                  ref={coverImageInputRef}
+                  onChange={handleCoverImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+            </div>
 
-          <div className="mb-6">
-            <label
-              htmlFor="image-upload"
-              className="flex items-center justify-center w-full h-32 border-2 border-dashed border-secondary rounded-lg cursor-pointer hover:border-secondary/50 transition-colors"
-            >
-              <div className="text-center">
-                <FaPlus className="w-8 h-8 mx-auto text-secondary" />
-                <span className="mt-2 block text-sm text-secondary">
-                  Add New Image
-                </span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Collection Images
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                {images.map((image) => (
+                  <div
+                    key={image}
+                    className="relative group rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={image}
+                      alt="Collection"
+                      className="w-full h-48 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(image)}
+                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      disabled={deleteSingleStatus.isPending}
+                    >
+                      <FaTrash className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                {newImages.map((image) => (
+                  <div
+                    key={image.preview}
+                    className="relative group rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={image.preview}
+                      alt="New Collection"
+                      className="w-full h-48 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteNewImage(image.preview)}
+                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => multipleFileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
+                >
+                  <FaPlus className="w-8 h-8 text-gray-400" />
+                  <span className="mt-2 text-sm text-gray-500">Add Images</span>
+                </button>
               </div>
               <input
                 type="file"
-                id="image-upload"
-                className="hidden"
+                ref={multipleFileInputRef}
+                onChange={handleImagesUpload}
+                multiple
                 accept="image/*"
-                onChange={handleImageUpload}
+                className="hidden"
               />
-            </label>
-          </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            {images.map((image) => (
-              <div
-                key={image.id}
-                className="relative group rounded-lg overflow-hidden"
+            <div className="flex justify-end space-x-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-50"
+                disabled={loading}
               >
-                <img
-                  src={image.url}
-                  alt="Collection"
-                  className="w-full h-48 object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleDeleteImage(image.id)}
-                  className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <FaTrash className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-primary rounded-md text-white hover:bg-primary/80 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary/90 transition-colors"
-            >
-              {isNew ? "Create Collection" : "Save Changes"}
-            </button>
-          </div>
-        </form>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className={`px-4 py-2 text-white rounded-lg ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-bgMain hover:bg-bgSection"
+                }`}
+              >
+                {loading ? "Saving..." : isNew ? "Create" : "Save Changes"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -168,15 +327,11 @@ const CollectionEdit = ({ collection, onClose, isNew = false }) => {
 
 CollectionEdit.propTypes = {
   collection: PropTypes.shape({
-    id: PropTypes.number,
+    _id: PropTypes.string,
     title: PropTypes.string,
     description: PropTypes.string,
-    images: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number,
-        url: PropTypes.string,
-      })
-    ),
+    images: PropTypes.arrayOf(PropTypes.string),
+    coverImage: PropTypes.string,
   }),
   onClose: PropTypes.func.isRequired,
   isNew: PropTypes.bool,

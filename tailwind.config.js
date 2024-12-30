@@ -4,9 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#FF3366",
-        secondary: "#00C2CB",
-        text: "#2A2A3C",
+        bgMain: "#0f3547",
+        bgSection: "#062c35",
+        textPrimary: "#c2d6e4",
+        textSecondary: "#969798",
+        hover: "#789091",
+        border: "#c2d6e4",
+      },
+      fontFamily: {
+        sans: ["Poppins", "Roboto", "sans-serif"],
       },
     },
   },

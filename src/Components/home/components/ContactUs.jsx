@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   FaMapMarkerAlt,
   FaEnvelope,
@@ -30,15 +31,6 @@ const ContactUs = () => {
     console.log(formData);
   };
 
-  const contactInfo = [
-    {
-      icon: <FaMapMarkerAlt className="w-6 h-6" />,
-      title: "Our Location",
-      details: "Faculty of Engineering, Assiut University, Assiut, Egypt",
-    },
-    {},
-  ];
-
   const socialLinks = [
     { icon: <FaFacebook />, url: "#", label: "Facebook" },
     { icon: <FaTwitter />, url: "#", label: "Twitter" },
@@ -47,15 +39,35 @@ const ContactUs = () => {
   ];
 
   return (
-    <section id="contact" className="py-20 bg-text">
+    <section id="contact" className="py-20 bg-bgSection">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-secondary mb-4">Contact Us</h2>
-          <div className="w-24 h-1 bg-primary mx-auto mb-4"></div>
-          <p className="text-gray-400">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-4xl font-bold text-textPrimary mb-4"
+          >
+            Contact Us
+          </motion.h2>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="w-24 h-1 bg-border mx-auto mb-4"
+          ></motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="text-textSecondary"
+          >
             Get in touch with us for any inquiries or collaboration
             opportunities
-          </p>
+          </motion.p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -65,7 +77,7 @@ const ContactUs = () => {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-primary mb-1"
+                    className="block text-sm font-medium text-textPrimary mb-1"
                   >
                     Your Name
                   </label>
@@ -75,14 +87,14 @@ const ContactUs = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
                     required
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-primary mb-1"
+                    className="block text-sm font-medium text-textPrimary mb-1"
                   >
                     Your Email
                   </label>
@@ -92,7 +104,7 @@ const ContactUs = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
                     required
                   />
                 </div>
@@ -101,7 +113,7 @@ const ContactUs = () => {
               <div>
                 <label
                   htmlFor="subject"
-                  className="block text-sm font-medium text-primary mb-1"
+                  className="block text-sm font-medium text-textPrimary mb-1"
                 >
                   Subject
                 </label>
@@ -111,7 +123,7 @@ const ContactUs = () => {
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="bg-textSecondary text-textPrimary w-full px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-border focus:border-transparent"
                   required
                 />
               </div>
@@ -119,7 +131,7 @@ const ContactUs = () => {
               <div>
                 <label
                   htmlFor="message"
-                  className="block text-sm font-medium text-primary mb-1"
+                  className="block text-sm font-medium text-textPrimary mb-1"
                 >
                   Message
                 </label>
@@ -129,14 +141,14 @@ const ContactUs = () => {
                   value={formData.message}
                   onChange={handleChange}
                   rows="5"
-                  className="w-full px-4 py-2 border outline-none rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="bg-textSecondary text-textPrimary w-full px-4 py-2 border outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
                   required
                 ></textarea>
               </div>
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors"
+                className="mx-auto block md:w-[350px] px-6 py-3 bg-textPrimary text-bgSection rounded-lg hover:shadow-md hover:shadow-textSecondary transition-all duration-300"
               >
                 Send Message
               </button>
@@ -144,29 +156,29 @@ const ContactUs = () => {
           </div>
 
           <div className="space-y-8 lg:mt-10">
-            <div className="flex items-start p-4 bg-gray-50 rounded-lg">
-              <div className="flex-shrink-0 p-3 bg-secondary text-white rounded-lg">
+            <div className="flex items-start p-4 bg-bgMain rounded-lg">
+              <div className="flex-shrink-0 p-3 bg-border text-bgSection rounded-lg">
                 <FaMapMarkerAlt className="w-6 h-6" />
               </div>
               <div className="ml-4">
-                <h4 className="text-lg font-semibold text-gray-800">
+                <h4 className="text-lg font-semibold text-textPrimary">
                   Our Location
                 </h4>
-                <p className="text-gray-600 mt-1">
+                <p className="text-textSecondary mt-1">
                   Faculty of Engineering, Assiut University, Assiut, Egypt
                 </p>
               </div>
             </div>
-            <div className="flex items-start p-4 bg-gray-50 rounded-lg">
-              <div className="flex-shrink-0 p-3 bg-secondary text-white rounded-lg">
+            <div className="flex items-start p-4 bg-bgMain rounded-lg">
+              <div className="flex-shrink-0 p-3 bg-border text-bgMain rounded-lg">
                 <FaEnvelope className="w-6 h-6" />
               </div>
               <div className="ml-4">
-                <h4 className="text-lg font-semibold text-gray-800">
+                <h4 className="text-lg font-semibold text-textPrimary">
                   Email Address
                 </h4>
-                <p className="text-gray-600 mt-1">
-                  contact@assiutmotorsport.com
+                <p className="text-textSecondary mt-1">
+                  assiut.motorsport@gmail.com
                 </p>
               </div>
             </div>
@@ -176,7 +188,7 @@ const ContactUs = () => {
                 <a
                   key={index}
                   href={social.url}
-                  className="p-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+                  className="p-3 bg-bgMain text-textSecondary rounded-lg hover:bg-border hover:text-bgMain transition-colors"
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -189,5 +201,4 @@ const ContactUs = () => {
     </section>
   );
 };
-
 export default ContactUs;

@@ -1,12 +1,57 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
+import { useTeamMembers } from "../../../context/teamMembersContext";
 
 const NewMemberAdder = ({ onClose, member, isNew = false }) => {
+  const {
+    createTeamMember,
+    createTeamMemberStatus,
+    updateTeamMemberText,
+    updateTeamMemberTextStatus,
+    updateTeamMemberImage,
+    updateTeamMemberImageStatus,
+  } = useTeamMembers();
+  const [loading, setLoading] = useState(
+    createTeamMemberStatus.isPending ||
+      updateTeamMemberTextStatus.isPending ||
+      updateTeamMemberImageStatus.isPending
+  );
+
+  useEffect(() => {
+    setLoading(
+      createTeamMemberStatus.isPending ||
+        updateTeamMemberTextStatus.isPending ||
+        updateTeamMemberImageStatus.isPending
+    );
+  }, [
+    createTeamMemberStatus.isPending,
+    updateTeamMemberTextStatus.isPending,
+    updateTeamMemberImageStatus.isPending,
+  ]);
+  const [error, setError] = useState(
+    createTeamMemberStatus.error ||
+      updateTeamMemberTextStatus.error ||
+      updateTeamMemberImageStatus.error
+  );
+  useEffect(() => {
+    if (createTeamMemberStatus.error) {
+      setError(createTeamMemberStatus.error);
+    } else if (updateTeamMemberTextStatus.error) {
+      setError(updateTeamMemberTextStatus.error);
+    } else if (updateTeamMemberImageStatus.error) {
+      setError(updateTeamMemberImageStatus.error);
+    }
+  }, [
+    createTeamMemberStatus.error,
+    updateTeamMemberTextStatus.error,
+    updateTeamMemberImageStatus.error,
+  ]);
+
   const [image, setImage] = useState(null);
-  const [name, setName] = useState(member?.name);
-  const [title, setTitle] = useState(member?.title);
-  const [bio, setBio] = useState(member?.bio);
+  const [name, setName] = useState(member?.name ? member.name : "");
+  const [title, setTitle] = useState(member?.title ? member.title : "");
+  const [bio, setBio] = useState(member?.description ? member.description : "");
 
   const handleChange = (e) => {
     const file = e.target.files[0];
@@ -15,29 +60,52 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add form submission logic here
-    onClose();
+
+    if (isNew) {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("title", title);
+      formData.append("description", bio);
+      formData.append("profileImage", image);
+      createTeamMember(formData);
+    } else {
+      updateTeamMemberText({
+        id: member._id,
+        name,
+        title,
+      });
+      const formData = new FormData();
+      formData.append("profileImage", image);
+      updateTeamMemberImage({ id: member._id, formData });
+    }
+    if (!loading && !error) {
+      onClose();
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-text dark:bg-gray-800 p-6 rounded-lg shadow-md max-w-md w-full mx-4 relative">
+      <div className="bg-textPrimary p-6 rounded-lg shadow-md max-w-md w-full mx-4 relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-300"
+          className="absolute top-4 right-4 text-bgMain hover:text-bgSection"
         >
           <IoClose className="w-6 h-6" />
         </button>
 
-        <h1 className="text-2xl font-bold text-primary dark:text-secondary mb-4">
+        <h1 className="text-2xl font-bold text-bgMain mb-4">
           {isNew ? "Add New Member" : "Edit Member"}
         </h1>
+
+        {!loading && error && (
+          <div className="text-red-500 mb-4">{error.message}</div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className="block text-sm font-bold text-bgMain"
             >
               Name
             </label>
@@ -47,7 +115,7 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
               onChange={(e) => setName(e.target.value)}
               placeholder="Name"
               id="name"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary dark:bg-gray-700 dark:text-white"
+              className="bg-textSecondary text-bgMain placeholder-textPrimary w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-textSecondary"
               required
             />
           </div>
@@ -55,7 +123,7 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
           <div className="space-y-2">
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className="block text-sm font-bold text-bgMain"
             >
               Title
             </label>
@@ -65,7 +133,7 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Title"
               id="title"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary dark:bg-gray-700 dark:text-white"
+              className="bg-textSecondary text-bgMain placeholder-textPrimary w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-textSecondary"
               required
             />
           </div>
@@ -73,7 +141,7 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
           <div className="space-y-2">
             <label
               htmlFor="bio"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className="block text-sm font-bold text-bgMain"
             >
               Bio
             </label>
@@ -82,15 +150,14 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
               onChange={(e) => setBio(e.target.value)}
               placeholder="add bio"
               id="bio"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary dark:bg-gray-700 dark:text-white"
-              required
+              className="bg-textSecondary text-bgMain placeholder-textPrimary w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-textSecondary"
             />
           </div>
 
           <div className="space-y-2">
             <label
               htmlFor="image"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className="block text-sm font-bold text-bgMain"
             >
               Profile Image
             </label>
@@ -98,7 +165,7 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
               type="file"
               onChange={handleChange}
               id="image"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary dark:bg-gray-700 dark:text-white"
+              className="w-full bg-textSecondary text-bgMain placeholder-textPrimary px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-bgMain"
               accept="image/*"
               required
             />
@@ -108,13 +175,14 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-primary rounded-lg text-gray-700 hover:bg-primary dark:text-gray-300 dark:hover:bg-primary/90 transition-colors"
+              className="px-4 py-2 border border-bgMain rounded-lg text-bgMain hover:bg-bgMain hover:text-textPrimary transition-colors"
             >
               Cancel
             </button>
+
             <button
               type="submit"
-              className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors dark:bg-secondary dark:hover:bg-secondary/90"
+              className="px-4 py-2 bg-bgMain text-textPrimary rounded-lg hover:bg-bgSection transition-colors"
             >
               {isNew ? "Add Member" : "Edit Member"}
             </button>
@@ -131,7 +199,8 @@ NewMemberAdder.propTypes = {
     id: PropTypes.number,
     name: PropTypes.string,
     title: PropTypes.string,
-    bio: PropTypes.string,
+    description: PropTypes.string,
+    _id: PropTypes.string,
   }),
   isNew: PropTypes.bool,
 };

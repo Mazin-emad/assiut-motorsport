@@ -1,49 +1,53 @@
 import { useParams } from "react-router";
-import image0 from "../../../assets/images/logo.jpg";
-import image1 from "../../../assets/images/car1.jpg";
-import image2 from "../../../assets/images/car2.jpg";
-import image3 from "../../../assets/images/car3.jpg";
-import image4 from "../../../assets/images/heroBackGroundCar.jpg";
-import image5 from "../../../assets/images/team.jpg";
+import { motion } from "framer-motion";
+import { useGallery } from "../../../context/galaryContext";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
-const imagesCollection = [
-  { id: 1, url: image1 },
-  { id: 2, url: image2 },
-  { id: 13, url: image5 },
-  { id: 3, url: image3 },
-  { id: 4, url: image0 },
-  { id: 5, url: image4 },
-  { id: 6, url: image5 },
-  { id: 7, url: image0 },
-  { id: 8, url: image4 },
-  { id: 9, url: image5 },
-  { id: 10, url: image1 },
-  { id: 11, url: image2 },
-  { id: 12, url: image3 },
-  { id: 14, url: image2 },
-  { id: 15, url: image3 },
-  { id: 16, url: image1 },
-  { id: 17, url: image0 },
-  { id: 18, url: image5 },
-];
-
+const getOneCollection = async (id) => {
+  const response = await fetch(
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/" +
+      id
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message);
+  }
+  return response.json();
+};
 const Collection = () => {
   const { id } = useParams();
-  const collectionTitle = `Collection ${id}`;
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["collection", id],
+    queryFn: () => getOneCollection(id),
+  });
 
   return (
-    <div className="min-h-screen bg-text py-12 px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
-          {collectionTitle}
-        </h1>
+    <div className="min-h-screen bg-bgSection py-12 px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-6">
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-4xl md:text-5xl font-bold text-textPrimary mb-4"
+        >
+          {data?.data?.title}
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="lg:text-lg w-11/12 sm:w-3/4 lg:w-1/2 mx-auto text-center text-textSecondary"
+        >
+          {data?.data?.description}
+        </motion.p>
       </div>
       <div className="columns-[300px] gap-2">
-        {imagesCollection.map((image) => (
+        {data?.data?.images.map((image) => (
           <img
-            key={image.id}
-            src={image.url}
-            alt={collectionTitle}
+            key={image}
+            src={image}
+            alt={data?.data?.title}
             className="w-full mb-2"
           />
         ))}

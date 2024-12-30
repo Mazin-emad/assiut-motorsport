@@ -6,9 +6,12 @@ import HomePage from "../pages/HomePage";
 import NotFoundPage from "../pages/NotFoundPage";
 import MainLayout from "../layout/MainLayout";
 import TeamMembersPage from "../pages/TeamMembersPage";
-import AdminLogInPage from "../pages/AdminLogInPage";
-import AdminSignUpPage from "../pages/AdminSignUpPage";
-import SecretTokenPage from "../pages/SecretTokenPage";
+import AdminLogInPage from "../pages/authPages/AdminLogInPage";
+import AdminSignUpPage from "../pages/authPages/AdminSignUpPage";
+import SecretTokenPage from "../pages/authPages/SecretTokenPage";
+import ForgetPassPage from "../pages/authPages/ForgetPassPage";
+import RestCodePage from "../pages/authPages/RestCodePage";
+import RestPassPage from "../pages/authPages/RestPassPage";
 
 const Router = () => {
   return (
@@ -16,8 +19,11 @@ const Router = () => {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
         <Route path="/login" element={<AdminLogInPage />} />
-        <Route path="/signup" element={<AdminSignUpPage />} />
         <Route path="/secret" element={<SecretTokenPage />} />
+        <Route path="/signup" element={<AdminSignUpPage />} />
+        <Route path="/forget" element={<ForgetPassPage />} />
+        <Route path="/code" element={<RestCodePage />} />
+        <Route path="/restpass" element={<RestPassPage />} />
         <Route path="/gallery">
           <Route index element={<GalleryPage />} />
           <Route path=":id" element={<CollectionPage />} />

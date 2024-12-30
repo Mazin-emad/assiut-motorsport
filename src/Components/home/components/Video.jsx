@@ -1,4 +1,4 @@
-import homeVideo from "../../../assets/images/video2.mp4";
+import homeVideo from "../../../assets/images/video.mp4";
 
 const Video = () => {
   return (
@@ -6,7 +6,7 @@ const Video = () => {
       <video
         src={homeVideo}
         alt="Car Demo"
-        className="w-full h-full object-cover"
+        className="aspect-video w-full h-full object-cover"
         autoPlay
         loop
         muted

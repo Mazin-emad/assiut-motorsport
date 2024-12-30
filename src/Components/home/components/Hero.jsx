@@ -4,15 +4,12 @@ import heroBackground from "../../../assets/images/heroBackGroundCar.jpg";
 const Hero = () => {
   return (
     <div className="relative h-screen bg-black overflow-hidden">
-      <motion.div
-        // transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
-        className="absolute inset-0"
-      >
+      <motion.div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroBackground})` }}
         />
-        {/* <div className="absolute inset-0 bg-black/50" /> */}
+        <div className="absolute inset-0 bg-black/50" />
       </motion.div>
 
       {/* Content */}
@@ -27,7 +24,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
+            className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-bgSection to-textPrimary"
           >
             Welcome to Assiut Motorsport
           </motion.h1>
@@ -35,7 +32,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.1 }}
-            className="text-xl md:text-2xl text-gray-300 mb-12"
+            className="text-xl md:text-2xl text-textPrimary mb-12"
           >
             Experience the thrill of engineering excellence
           </motion.p>
@@ -50,14 +47,14 @@ const Hero = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+              className="px-8 py-3 bg-bgMain text-textPrimary rounded-lg hover:bg-bgSection transition-colors"
             >
               Join Our Team
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 border-2 border-secondary text-secondary rounded-lg hover:bg-secondary/10 transition-colors"
+              className="px-8 py-3 border-2 border-bgSection text-textPrimary rounded-lg hover:bg-bgSection/10 transition-colors"
             >
               Learn More
             </motion.button>

@@ -4,7 +4,7 @@ import NavBar from "./NavBar";
 
 export default function MainLayout() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-bg font-sans">
       <NavBar />
       <main className="flex-1">
         <Outlet />

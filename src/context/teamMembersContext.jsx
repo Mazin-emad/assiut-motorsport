@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext } from "react";
 import PropTypes from "prop-types";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getToken } from "./localstorageAPI";
 const TeamMembersContext = createContext();
 // eslint-disable-next-line react-refresh/only-export-components
 export const useTeamMembers = () => {
@@ -11,142 +12,157 @@ export const useTeamMembers = () => {
   return context;
 };
 
+const fetchTeamMembers = async () => {
+  const response = await fetch(
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember"
+  );
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
+const createTeamMember = async (formData) => {
+  const token = getToken();
+  if (!token) {
+    throw new Error("Token is required");
+  }
+  const response = await fetch(
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/createTeamMember",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message);
+  }
+  return response.json();
+};
+
+const updateTeamMemberText = async ({ id, name, title }) => {
+  const token = getToken();
+  if (!token) {
+    throw new Error("Token is required");
+  }
+  const response = await fetch(
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/updateTextData/" +
+      id,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name,
+        title,
+      }),
+    }
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message);
+  }
+  return response.json();
+};
+
+const updateTeamMemberImage = async ({ id, formData }) => {
+  const token = getToken();
+  if (!token) {
+    throw new Error("Token is required");
+  }
+  const response = await fetch(
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/updateTeamMemberProfileImage/" +
+      id,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message);
+  }
+  return response.json();
+};
+
+const deleteTeamMember = async (id) => {
+  const token = getToken();
+  if (!token) {
+    throw new Error("Token is required");
+  }
+  const response = await fetch(
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/deleteTeamMember/" +
+      id,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message);
+  }
+};
+
 export const TeamMembersProvider = ({ children }) => {
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["teamMembers"],
+    queryFn: fetchTeamMembers,
+  });
 
-  // Load initial data from localStorage
-  useEffect(() => {
-    try {
-      const storedMembers = localStorage.getItem("teamMembers");
-      if (storedMembers) {
-        setTeamMembers(JSON.parse(storedMembers));
-      }
-    } catch (err) {
-      setError("Failed to load team members from storage", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const mutationCreate = useMutation({
+    mutationFn: createTeamMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries("teamMembers");
+    },
+  });
 
-  // Save to localStorage whenever teamMembers changes
-  useEffect(() => {
-    try {
-      localStorage.setItem("teamMembers", JSON.stringify(teamMembers));
-    } catch (err) {
-      setError("Failed to save team members to storage", err);
-    }
-  }, [teamMembers]);
+  const mutationUpdateText = useMutation({
+    mutationFn: updateTeamMemberText,
+    onSuccess: () => {
+      queryClient.invalidateQueries("teamMembers");
+    },
+  });
 
-  // Add a new team member
-  const addTeamMember = (newMember) => {
-    try {
-      setLoading(true);
-      // Validate required fields
-      if (!newMember.name || !newMember.role) {
-        throw new Error("Name and role are required fields");
-      }
-      // Generate unique ID if not provided
-      const memberWithId = {
-        ...newMember,
-        id: newMember.id || Date.now().toString(),
-        createdAt: new Date().toISOString(),
-      };
-      setTeamMembers((prev) => [...prev, memberWithId]);
-      setError(null);
-      return memberWithId;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const mutationUpdateImage = useMutation({
+    mutationFn: updateTeamMemberImage,
+    onSuccess: () => {
+      queryClient.invalidateQueries("teamMembers");
+    },
+  });
 
-  // Remove a team member
-  const removeTeamMember = (memberId) => {
-    try {
-      setLoading(true);
-      if (!memberId) {
-        throw new Error("Member ID is required");
-      }
-      setTeamMembers((prev) => {
-        const filtered = prev.filter((member) => member.id !== memberId);
-        if (filtered.length === prev.length) {
-          throw new Error("Member not found");
-        }
-        return filtered;
-      });
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Update a team member
-  const updateTeamMember = (memberId, updatedData) => {
-    try {
-      setLoading(true);
-      if (!memberId) {
-        throw new Error("Member ID is required");
-      }
-      setTeamMembers((prev) => {
-        const updated = prev.map((member) =>
-          member.id === memberId
-            ? {
-                ...member,
-                ...updatedData,
-                updatedAt: new Date().toISOString(),
-              }
-            : member
-        );
-        if (JSON.stringify(updated) === JSON.stringify(prev)) {
-          throw new Error("Member not found");
-        }
-        return updated;
-      });
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Get a specific team member
-  const getTeamMember = (memberId) => {
-    try {
-      if (!memberId) {
-        throw new Error("Member ID is required");
-      }
-      const member = teamMembers.find((member) => member.id === memberId);
-      if (!member) {
-        throw new Error("Member not found");
-      }
-      return member;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  // Clear all errors
-  const clearError = () => setError(null);
+  const mutationDelete = useMutation({
+    mutationFn: deleteTeamMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries("teamMembers");
+    },
+  });
 
   const value = {
-    teamMembers,
-    loading,
+    data,
     error,
-    addTeamMember,
-    removeTeamMember,
-    updateTeamMember,
-    getTeamMember,
-    clearError,
+    isLoading,
+    createTeamMember: mutationCreate.mutate,
+    createTeamMemberStatus: mutationCreate,
+    updateTeamMemberText: mutationUpdateText.mutate,
+    updateTeamMemberTextStatus: mutationUpdateText,
+    updateTeamMemberImage: mutationUpdateImage.mutate,
+    updateTeamMemberImageStatus: mutationUpdateImage,
+    deleteTeamMember: mutationDelete.mutate,
+    deleteTeamMemberStatus: mutationDelete,
   };
 
   return (

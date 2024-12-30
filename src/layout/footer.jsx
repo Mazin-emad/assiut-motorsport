@@ -25,11 +25,11 @@ const socialLinks = [
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-gray-300 py-4">
+    <footer className="bg-bgMain text-textPrimary py-4">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <p className="text-gray-300 text-sm">
+            <p className="text-textSecondary text-sm">
               &copy; {new Date().getFullYear()} Assiut Motorsport.
             </p>
           </div>
@@ -40,7 +40,7 @@ const Footer = () => {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-gray-400 hover:text-gray-300"
+                  className="text-textSecondary hover:text-textPrimary"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={item.name}
@@ -52,17 +52,17 @@ const Footer = () => {
           </div>
 
           <div className="flex flex-col items-center md:items-end text-center md:text-left">
-            <p className="text-gray-300 text-sm">
+            <p className="text-textSecondary text-sm">
               Made by{" "}
               <span className="font-semibold">
-                <a href="#" className="hover:text-secondary">
+                <a href="#" className="hover:text-textPrimary">
                   Zeyad
                 </a>{" "}
                 &amp;{" "}
                 <a
                   target="_blank"
                   href="https://mazin-emad.github.io/profile/"
-                  className="hover:text-secondary"
+                  className="hover:text-textPrimary"
                 >
                   Mazin
                 </a>

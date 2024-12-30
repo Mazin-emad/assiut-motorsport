@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { createContext, useContext, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 
 const AuthContext = createContext();
 // eslint-disable-next-line react-refresh/only-export-components
@@ -11,92 +12,100 @@ export const useAuth = () => {
   return context;
 };
 
-async function checkSecretKey(secretKey) {
-  try {
-    const response = await fetch(
-      "https://sport-production-f4dc.up.railway.app/api/validate-secert",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ secretKey }),
-      }
-    );
-    if (!response.ok) {
-      throw new Error(`${response.status}`);
+// 911gt2rsAssiutMotorSportZz992
+const validateSecretKeyFetch = async (secretKey) => {
+  const response = await fetch(
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/validate-secert",
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({ secretKey }),
     }
-    const { data } = await response.json();
-    console.log("Check Secret Key Response:", data);
-    return data;
-  } catch (error) {
-    console.error("Failed to check secret key:", error);
-    throw error;
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Invalid secret key");
   }
-}
-async function signup(username, password, token) {
+
+  const data = await response.json();
+  return data;
+};
+
+// testNumber213@gmail.com
+async function signup({ name, email, password, passwordConfirm }, token) {
+  if (!token) {
+    throw new Error("Token is required");
+  }
+
   try {
     const response = await fetch(
-      "https://sport-production-f4dc.up.railway.app/api/signup",
+      "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/signup",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          passwordConfirm,
+        }),
       }
     );
 
+    const responseData = await response.json();
+    console.log("Signup response:", {
+      status: response.status,
+      data: responseData,
+    });
+
     if (!response.ok) {
-      throw new Error(`${response.status}`);
+      if (responseData.error && Array.isArray(responseData.error)) {
+        // Combine all error messages
+        const errorMessage = responseData.error
+          .map((err) => err.msg)
+          .join(", ");
+        throw new Error(errorMessage);
+      }
+      throw new Error(responseData.message || "Failed to sign up");
     }
 
-    const data = await response.json();
-    console.log("Signup Response:", data);
-    return data;
+    return responseData;
   } catch (error) {
-    console.error("Failed to signup:", error);
+    console.error("Signup error details:", error);
     throw error;
   }
 }
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [token, setToken] = useState("");
 
-  const handleCheckSecretKey = async (token) => {
-    setLoading(true);
-    try {
-      const signupToken = await checkSecretKey(token);
-      setToken(signupToken);
-    } catch (err) {
-      setError("there was an error" + err);
-    } finally {
-      setLoading(false);
-    }
+  const validateMutation = useMutation({
+    mutationFn: validateSecretKeyFetch,
+  });
+
+  const signupMutation = useMutation({
+    mutationFn: (data) => signup(data, token),
+  });
+
+  const value = {
+    setToken,
+    token,
+    validateSecretKey: validateMutation.mutate,
+    validateStatus: validateMutation,
+    signup: ({ name, email, password, passwordConfirm }, options = {}) =>
+      signupMutation.mutate(
+        { name, email, password, passwordConfirm },
+        options
+      ),
+    signupStatus: signupMutation,
   };
 
-  const handleSignup = async (username, password) => {
-    setLoading(true);
-    try {
-      await signup(username, password, token);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{ user, handleSignup, loading, error, handleCheckSecretKey }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;
