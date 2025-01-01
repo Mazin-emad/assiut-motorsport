@@ -1,22 +1,9 @@
 import { createContext, useContext } from "react";
 import PropTypes from "prop-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getToken } from "./localstorageAPI";
 
 const UpdateGalleryContext = createContext();
-const getToken = () => {
-  const tokenData = JSON.parse(localStorage.getItem("authToken"));
-  if (!tokenData) return null;
-
-  const { token, expiration } = tokenData;
-  const now = new Date();
-
-  if (new Date(expiration) > now) {
-    return token;
-  } else {
-    localStorage.removeItem("authToken");
-    return null;
-  }
-};
 
 const updateCollectionText = async ({ id, updatedCollection }) => {
   const token = getToken();

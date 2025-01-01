@@ -1,23 +1,9 @@
 import { createContext, useContext } from "react";
 import PropTypes from "prop-types";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { getToken } from "./localstorageAPI";
 
 const GalleryContext = createContext();
-
-const getToken = () => {
-  const tokenData = JSON.parse(localStorage.getItem("authToken"));
-  if (!tokenData) return null;
-
-  const { token, expiration } = tokenData;
-  const now = new Date();
-
-  if (new Date(expiration) > now) {
-    return token;
-  } else {
-    localStorage.removeItem("authToken");
-    return null;
-  }
-};
 
 const fetchCollections = async () => {
   const response = await fetch(
@@ -35,14 +21,13 @@ const createCollection = async (newCollection) => {
     throw new Error("You must be logged in to create a collection");
   }
   const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery",
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/createGallery",
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(newCollection),
+      body: newCollection,
     }
   );
   if (!response.ok) {
@@ -52,17 +37,17 @@ const createCollection = async (newCollection) => {
   return response.json();
 };
 
-const uploadCollectionImages = async (id, formData) => {
+const uploadCollectionImages = async ({ id, formData }) => {
   const token = getToken();
   if (!token) {
     throw new Error("You must be logged in to to create a collection");
   }
 
   const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/" +
+    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/uploadGalleryImages/" +
       id,
     {
-      method: "POST",
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -91,7 +76,7 @@ const deleteSingleImage = async ({ id, url }) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ gallery: url }),
     }
   );
   if (!response.ok) {
@@ -121,7 +106,7 @@ const deleteCollection = async (id) => {
     const errorData = await response.json();
     throw new Error(errorData.message);
   }
-  return response.json();
+  // return response.json();
 };
 
 export const GalleryProvider = ({ children }) => {
@@ -134,36 +119,36 @@ export const GalleryProvider = ({ children }) => {
   const mutationCreate = useMutation({
     mutationFn: createCollection,
     onSuccess: () => {
-      queryClient.invalidateQueries("collections");
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
     },
   });
 
   const mutationUpload = useMutation({
     mutationFn: uploadCollectionImages,
     onSuccess: () => {
-      queryClient.invalidateQueries("collections");
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
     },
   });
 
   const mutationDelete = useMutation({
     mutationFn: deleteSingleImage,
     onSuccess: () => {
-      queryClient.invalidateQueries("collections");
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
     },
   });
 
   const mutationDeleteCollection = useMutation({
     mutationFn: deleteCollection,
     onSuccess: () => {
-      queryClient.invalidateQueries("collections");
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
     },
   });
 
   const value = {
-    collections: data,
+    data,
     error,
     isLoading,
-    createCollection: mutationCreate.mutate,
+    createCollection: mutationCreate.mutateAsync,
     createStatus: mutationCreate,
     deleteSingleImage: mutationDelete.mutate,
     deleteSingleStatus: mutationDelete,

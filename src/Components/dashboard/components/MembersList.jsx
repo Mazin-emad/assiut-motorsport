@@ -1,7 +1,7 @@
 import { FaEdit, FaTrash } from "react-icons/fa";
 import logo from "../../../assets/images/logo.jpg";
 import NewMemberAdder from "./NewMemberAdder";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTeamMembers } from "../../../context/teamMembersContext";
 
 const MembersList = () => {
@@ -9,6 +9,11 @@ const MembersList = () => {
     useTeamMembers();
   const [isNew, setIsNew] = useState(false);
   const [editMember, setEditMember] = useState(null);
+  const [filteredMembers, setFilteredMembers] = useState([]);
+
+  useEffect(() => {
+    setFilteredMembers(data?.data);
+  }, [data]);
 
   const handleEditClick = (member) => {
     setEditMember(member);
@@ -24,11 +29,20 @@ const MembersList = () => {
     deleteTeamMember(id);
   };
 
+  const handelSearch = (e) => {
+    setFilteredMembers(
+      data?.data?.filter((member) =>
+        member.name.toLowerCase().includes(e.target.value.toLowerCase())
+      )
+    );
+  };
+
   return (
     <div className="mt-6 bg-bgSection rounded-lg p-6">
       <div className="sm:flex text-center mb-4">
         <input
           type="search"
+          onChange={handelSearch}
           placeholder="Search for member"
           className="flex-grow outline-none text-bgMain bg-textPrimary px-4 py-2 border rounded-lg mr-4 focus:outline-none focus:ring-2 focus:ring-textSecondary"
         />
@@ -40,7 +54,7 @@ const MembersList = () => {
           Add Member
         </button>
       </div>
-      {error && !isLoading && <p className="text-red-500">{error}</p>}
+      {error && !isLoading && <p className="text-red-500">{error.message}</p>}
 
       {(!data || data?.data?.length === 0) && !isLoading && !error ? (
         <div className="mt-6 text-center py-8 bg-bgSection rounded-lg">
@@ -68,7 +82,7 @@ const MembersList = () => {
               </tr>
             </thead>
             <tbody className="bg-bgMain divide-y divide-bgSection">
-              {data?.data?.map((member) => (
+              {filteredMembers?.map((member) => (
                 <tr key={member._id} className="hover:bg-bgSection">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">

@@ -3,18 +3,12 @@ import PropTypes from "prop-types";
 import { IoClose } from "react-icons/io5";
 import { FaTrash, FaPlus, FaImage } from "react-icons/fa";
 import { useGallery } from "../../../context/galaryContext";
-import { useUpdateGallery } from "../../../context/updatGallery";
 
-const CollectionEdit = ({ collection, onClose }) => {
-  const oldValues = {
-    title: collection.title,
-    description: collection.description,
-  };
-  const [title, setTitle] = useState(collection.title);
-  const [description, setDescription] = useState(collection.description);
+const CollectionNew = ({ onClose }) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
-  const [images, setImages] = useState(collection.images);
   const [newImages, setNewImages] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,54 +17,27 @@ const CollectionEdit = ({ collection, onClose }) => {
   const coverImageInputRef = useRef(null);
 
   const {
-    deleteSingleImage,
-    deleteSingleStatus,
+    createCollection,
+    createStatus,
     uploadCollectionImages,
     uploadStatus,
   } = useGallery();
 
-  const {
-    updateCollection,
-    updateCollectionStatus,
-    updateCollectionCover,
-    updateCollectionCoverStatus,
-  } = useUpdateGallery();
-
   useEffect(() => {
-    if (
-      updateCollectionStatus.isPending ||
-      updateCollectionCoverStatus.isPending ||
-      uploadStatus.isPending
-    ) {
+    if (createStatus.isPending || uploadStatus.isPending) {
       setLoading(true);
     } else {
       setLoading(false);
     }
-  }, [
-    updateCollectionStatus.isPending,
-    updateCollectionCoverStatus.isPending,
-    uploadStatus.isPending,
-  ]);
+  }, [createStatus.isPending, uploadStatus.isPending]);
 
   useEffect(() => {
-    if (
-      updateCollectionStatus.error ||
-      updateCollectionCoverStatus.error ||
-      uploadStatus.error
-    ) {
-      setError(
-        updateCollectionStatus.error.message ||
-          updateCollectionCoverStatus.error.message ||
-          uploadStatus.error.message
-      );
+    if (createStatus.error || uploadStatus.error) {
+      setError(createStatus.error.message || uploadStatus.error.message);
     } else {
       setError(null);
     }
-  }, [
-    updateCollectionStatus.error,
-    updateCollectionCoverStatus.error,
-    uploadStatus.error,
-  ]);
+  }, [createStatus.error, uploadStatus.error]);
 
   const handleCoverImageUpload = (e) => {
     const file = e.target.files[0];
@@ -104,50 +71,48 @@ const CollectionEdit = ({ collection, onClose }) => {
     setNewImages((prev) => prev.filter((img) => img.preview !== previewUrl));
   };
 
-  const handleDeleteImage = async (image) => {
-    await deleteSingleImage({ id: collection._id, url: image });
-    setImages((prev) => prev.filter((img) => img !== image));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    if (!title || !description) {
-      setError("Title and description are required");
+    try {
+      if (!title || !description) {
+        throw new Error("Title and description are required");
+      }
+
+      if (!coverImage) {
+        throw new Error("Cover image is required for new collections");
+      }
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("coverImage", coverImage);
+
+      const collectionData = await createCollection(formData);
+
+      if (newImages.length > 0) {
+        const imagesFormData = new FormData();
+        newImages.forEach((img) => {
+          imagesFormData.append("images", img.file);
+        });
+        const collectionId = collectionData.data._id;
+        await uploadCollectionImages({
+          id: collectionId,
+          formData: imagesFormData,
+        });
+      }
+
+      // setLoading(false);
+
+      if (!loading && !error) {
+        onClose();
+      }
+    } catch (error) {
+      setError("Failed to create collection" + error);
+      setLoading(false);
     }
-
-    if (oldValues.description !== description || oldValues.title !== title) {
-      await updateCollection({
-        id: collection._id,
-        updatedCollection: { title, description },
-      });
-    }
-
-    if (coverImage) {
-      const coverFormData = new FormData();
-      coverFormData.append("coverImage", coverImage);
-      await updateCollectionCover({
-        id: collection._id,
-        formData: coverFormData,
-      });
-    }
-
-    if (newImages.length > 0) {
-      const imagesFormData = new FormData();
-      newImages.forEach((img) => {
-        imagesFormData.append("images", img.file);
-      });
-      await uploadCollectionImages({
-        id: collection._id,
-        formData: imagesFormData,
-      });
-    }
-
-    onClose();
-
-    setLoading(false);
   };
 
   return (
@@ -155,7 +120,7 @@ const CollectionEdit = ({ collection, onClose }) => {
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
         <div className="flex flex-col ">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Edit Collection</h2>
+            <h2 className="text-2xl font-bold">Create New Collection</h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
@@ -163,8 +128,9 @@ const CollectionEdit = ({ collection, onClose }) => {
               <IoClose className="w-6 h-6" />
             </button>
           </div>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          <form className="space-y-6">
+          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Title
@@ -243,26 +209,6 @@ const CollectionEdit = ({ collection, onClose }) => {
                 Please upload 5 images a time, JUST 5
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                {images.map((image) => (
-                  <div
-                    key={image}
-                    className="relative group rounded-lg overflow-hidden"
-                  >
-                    <img
-                      src={image}
-                      alt="Collection"
-                      className="w-full h-48 object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteImage(image)}
-                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      disabled={deleteSingleStatus.isPending}
-                    >
-                      <FaTrash className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
                 {newImages.map((image) => (
                   <div
                     key={image.preview}
@@ -312,7 +258,6 @@ const CollectionEdit = ({ collection, onClose }) => {
               </button>
               <button
                 type="submit"
-                onClick={handleSubmit}
                 disabled={loading}
                 className={`px-4 py-2 text-white rounded-lg ${
                   loading
@@ -320,7 +265,7 @@ const CollectionEdit = ({ collection, onClose }) => {
                     : "bg-bgMain hover:bg-bgSection"
                 }`}
               >
-                {loading ? "Saving..." : "Save Changes"}
+                {loading ? "Creating..." : "Create Collection"}
               </button>
             </div>
           </form>
@@ -330,16 +275,8 @@ const CollectionEdit = ({ collection, onClose }) => {
   );
 };
 
-CollectionEdit.propTypes = {
-  collection: PropTypes.shape({
-    _id: PropTypes.string,
-    title: PropTypes.string,
-    description: PropTypes.string,
-    images: PropTypes.arrayOf(PropTypes.string),
-    coverImage: PropTypes.string,
-  }),
+CollectionNew.propTypes = {
   onClose: PropTypes.func.isRequired,
-  isNew: PropTypes.bool,
 };
 
-export default CollectionEdit;
+export default CollectionNew;

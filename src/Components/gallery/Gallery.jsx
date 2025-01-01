@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { useGallery } from "../../context/galaryContext";
 
 const Gallery = () => {
   const navigate = useNavigate();
-  const { collections, error, isLoading } = useGallery();
+  const { data, error, isLoading } = useGallery();
 
   return (
     <div className="min-h-screen bg-bgSection py-12 px-4 sm:px-6 lg:px-8">
@@ -36,7 +35,7 @@ const Gallery = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {collections?.data.map((collection) => (
+            {data?.data.map((collection) => (
               <div
                 className="group relative overflow-hidden rounded-xl bg-bgMain shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
                 onClick={() => navigate(`/gallery/${collection._id}`)}
@@ -56,7 +55,7 @@ const Gallery = () => {
                       {collection.title}
                     </h3>
                     <p className="text-textSecondary text-sm">
-                      Click to view details
+                      Click to See Collection
                     </p>
                   </div>
                 </div>
@@ -65,8 +64,8 @@ const Gallery = () => {
           </div>
         )}
         {!isLoading && error && (
-          <div className="text-xl lg:text-2xl text-textSecondary text-center">
-            {error}
+          <div className="text-xl lg:text-2xl text-red-500 text-center">
+            {error.message}
           </div>
         )}
       </div>

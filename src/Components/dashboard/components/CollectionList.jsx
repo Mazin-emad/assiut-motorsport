@@ -1,32 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import CollectionEdit from "./CollectionEdit";
 import { useGallery } from "../../../context/galaryContext";
+import CollectionNew from "./CollectionNew";
 
 const CollectionList = () => {
-  const {
-    collections,
-    error,
-    isLoading,
-    deleteCollection,
-    deleteCollectionStatus,
-  } = useGallery();
+  const { data, error, isLoading, deleteCollection, deleteCollectionStatus } =
+    useGallery();
 
   const [selectedCollection, setSelectedCollection] = useState(null);
-  const [isNewCollection, setIsNewCollection] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [filteredCollections, setFilteredCollections] = useState(data?.data);
+
+  useEffect(() => {
+    setFilteredCollections(data?.data);
+  }, [data]);
 
   const handleEditClick = (collection) => {
     setSelectedCollection(collection);
-    setIsNewCollection(false);
   };
 
   const handleAddNew = () => {
-    setSelectedCollection({});
-    setIsNewCollection(true);
+    setIsAdding(true);
   };
 
   const handleDeleteClick = (id) => {
     deleteCollection(id);
+  };
+
+  const handelSearch = (e) => {
+    setFilteredCollections(
+      data?.data?.filter((collection) =>
+        collection.title.toLowerCase().includes(e.target.value.toLowerCase())
+      )
+    );
   };
 
   return (
@@ -34,6 +41,7 @@ const CollectionList = () => {
       <div className="sm:flex text-center mb-4">
         <input
           type="search"
+          onChange={handelSearch}
           placeholder="Search collections"
           className="flex-grow px-4 py-2 mr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary dark:bg-textPrimary"
         />
@@ -45,7 +53,7 @@ const CollectionList = () => {
         </button>
       </div>
 
-      {!collections || collections?.data?.length === 0 ? (
+      {(!data || data?.data?.length === 0) && !isLoading && !error ? (
         <div className="mt-6 text-center py-8 bg-bgSection rounded-lg">
           <h2 className="text-xl text-textPrimary font-medium">
             No Collections yet
@@ -72,7 +80,7 @@ const CollectionList = () => {
               </tr>
             </thead>
             <tbody className="bg-bgMain divide-y divide-bgMain">
-              {collections?.data?.map((collection) => (
+              {filteredCollections?.map((collection) => (
                 <tr key={collection._id} className="hover:bg-bgMain">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -92,7 +100,7 @@ const CollectionList = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-textSecondary">
-                      {collection.imageCount} images
+                      {collection.images.length} images
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -117,7 +125,7 @@ const CollectionList = () => {
               ))}
             </tbody>
           </table>
-          {error && <p className="text-red-500 mt-4">{error}</p>}
+          {error && <p className="text-red-500 mt-4">{error.message}</p>}
           {isLoading && <p className="text-textSecondary mt-4">Loading...</p>}
         </div>
       )}
@@ -125,9 +133,9 @@ const CollectionList = () => {
         <CollectionEdit
           collection={selectedCollection}
           onClose={() => setSelectedCollection(null)}
-          isNew={isNewCollection}
         />
       )}
+      {isAdding && <CollectionNew onClose={() => setIsAdding(false)} />}
     </div>
   );
 };

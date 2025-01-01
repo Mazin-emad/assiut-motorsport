@@ -47,7 +47,7 @@ const createTeamMember = async (formData) => {
 const updateTeamMemberText = async ({ id, name, title }) => {
   const token = getToken();
   if (!token) {
-    throw new Error("Token is required");
+    throw new Error("You must be logged in to update a collection");
   }
   const response = await fetch(
     "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/updateTextData/" +

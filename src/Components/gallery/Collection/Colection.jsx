@@ -1,7 +1,5 @@
 import { useParams } from "react-router";
 import { motion } from "framer-motion";
-import { useGallery } from "../../../context/galaryContext";
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 const getOneCollection = async (id) => {
@@ -52,6 +50,15 @@ const Collection = () => {
           />
         ))}
       </div>
+      {isLoading ? (
+        <div className="text-xl lg:text-2xl text-textSecondary text-center">
+          Loading...
+        </div>
+      ) : (
+        <div className="text-xl lg:text-2xl text-red-500 text-center">
+          {error?.message}
+        </div>
+      )}
     </div>
   );
 };
