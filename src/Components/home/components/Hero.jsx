@@ -2,6 +2,19 @@ import { motion } from "framer-motion";
 import heroBackground from "../../../assets/images/heroBackGroundCar.jpg";
 
 const Hero = () => {
+  const handleLearnMore = () => {
+    const aboutSection = document.getElementById("about");
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+  const handleContactUs = () => {
+    const contactSection = document.getElementById("contact");
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="relative h-screen bg-black overflow-hidden">
       <motion.div className="absolute inset-0">
@@ -47,13 +60,15 @@ const Hero = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleContactUs}
               className="px-8 py-3 bg-bgMain text-textPrimary rounded-lg hover:bg-bgSection transition-colors"
             >
-              Join Our Team
+              Contact Us
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleLearnMore}
               className="px-8 py-3 border-2 border-bgSection text-textPrimary rounded-lg hover:bg-bgSection/10 transition-colors"
             >
               Learn More

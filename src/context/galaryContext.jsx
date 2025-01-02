@@ -6,9 +6,7 @@ import { getToken } from "./localstorageAPI";
 const GalleryContext = createContext();
 
 const fetchCollections = async () => {
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery"
-  );
+  const response = await fetch(import.meta.env.VITE_GALLERY_BASE);
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -20,16 +18,14 @@ const createCollection = async (newCollection) => {
   if (!token) {
     throw new Error("You must be logged in to create a collection");
   }
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/createGallery",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: newCollection,
-    }
-  );
+
+  const response = await fetch(import.meta.env.VITE_GALLERY_CREATE, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: newCollection,
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
@@ -44,8 +40,7 @@ const uploadCollectionImages = async ({ id, formData }) => {
   }
 
   const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/uploadGalleryImages/" +
-      id,
+    `${import.meta.env.VITE_GALLERY_UPLOAD_IMAGES}/${id}`,
     {
       method: "PUT",
       headers: {
@@ -68,8 +63,7 @@ const deleteSingleImage = async ({ id, url }) => {
   }
 
   const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/deleteSingleImage/" +
-      id,
+    `${import.meta.env.VITE_GALLERY_DELETE_IMAGE}/${id}`,
     {
       method: "DELETE",
       headers: {
@@ -91,22 +85,17 @@ const deleteCollection = async (id) => {
   if (!token) {
     throw new Error("You must be logged in to delete a collection");
   }
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/deleteGallery/" +
-      id,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await fetch(`${import.meta.env.VITE_GALLERY_DELETE}/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
   }
-  // return response.json();
 };
 
 export const GalleryProvider = ({ children }) => {

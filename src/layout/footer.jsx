@@ -3,22 +3,22 @@ import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
 const socialLinks = [
   {
     name: "Facebook",
-    href: "#",
+    href: "https://www.facebook.com/Assiut.Motorsport",
     icon: <FaFacebook className="w-5 h-5" />,
   },
   {
     name: "Twitter",
-    href: "#",
+    href: "https://x.com/AssiutMotorSPT",
     icon: <FaTwitter className="w-5 h-5" />,
   },
   {
     name: "Instagram",
-    href: "#",
+    href: "https://www.instagram.com/assiutmotorsporteg?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
     icon: <FaInstagram className="w-5 h-5" />,
   },
   {
     name: "LinkedIn",
-    href: "#",
+    href: "https://www.linkedin.com/company/assiut-motorsport/",
     icon: <FaLinkedin className="w-5 h-5" />,
   },
 ];

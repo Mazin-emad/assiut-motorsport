@@ -12,18 +12,14 @@ export const useAuth = () => {
   return context;
 };
 
-// 911gt2rsAssiutMotorSportZz992
 const validateSecretKeyFetch = async (secretKey) => {
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/validate-secert",
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({ secretKey }),
-    }
-  );
+  const response = await fetch(import.meta.env.VITE_AUTH_VALIDATE_SECRET, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({ secretKey }),
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || "Invalid secret key");
@@ -33,29 +29,25 @@ const validateSecretKeyFetch = async (secretKey) => {
   return data;
 };
 
-// testNumber213@gmail.com
 async function signup({ name, email, password, passwordConfirm }, token) {
   if (!token) {
     throw new Error("Token is required");
   }
 
   try {
-    const response = await fetch(
-      "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/signup",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          passwordConfirm,
-        }),
-      }
-    );
+    const response = await fetch(import.meta.env.VITE_AUTH_SIGNUP, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        passwordConfirm,
+      }),
+    });
 
     const responseData = await response.json();
     console.log("Signup response:", {

@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import PropTypes from "prop-types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getToken } from "./localstorageAPI";
+
 const TeamMembersContext = createContext();
 // eslint-disable-next-line react-refresh/only-export-components
 export const useTeamMembers = () => {
@@ -13,9 +14,7 @@ export const useTeamMembers = () => {
 };
 
 const fetchTeamMembers = async () => {
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember"
-  );
+  const response = await fetch(import.meta.env.VITE_TEAM_BASE);
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -25,18 +24,17 @@ const fetchTeamMembers = async () => {
 const createTeamMember = async (formData) => {
   const token = getToken();
   if (!token) {
-    throw new Error("Token is required");
+    throw new Error("You must be logged in to create a team member");
   }
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/createTeamMember",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    }
-  );
+
+  const response = await fetch(import.meta.env.VITE_TEAM_CREATE, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
@@ -47,11 +45,11 @@ const createTeamMember = async (formData) => {
 const updateTeamMemberText = async ({ id, name, title, description }) => {
   const token = getToken();
   if (!token) {
-    throw new Error("You must be logged in to update a collection");
+    throw new Error("You must be logged in to update a team member");
   }
+
   const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/updateTextData/" +
-      id,
+    `${import.meta.env.VITE_TEAM_UPDATE_TEXT}/${id}`,
     {
       method: "PUT",
       headers: {
@@ -65,6 +63,7 @@ const updateTeamMemberText = async ({ id, name, title, description }) => {
       }),
     }
   );
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
@@ -75,11 +74,11 @@ const updateTeamMemberText = async ({ id, name, title, description }) => {
 const updateTeamMemberImage = async ({ id, formData }) => {
   const token = getToken();
   if (!token) {
-    throw new Error("Token is required");
+    throw new Error("You must be logged in to update a team member's image");
   }
+
   const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/updateTeamMemberProfileImage/" +
-      id,
+    `${import.meta.env.VITE_TEAM_UPDATE_IMAGE}/${id}`,
     {
       method: "PUT",
       headers: {
@@ -88,6 +87,7 @@ const updateTeamMemberImage = async ({ id, formData }) => {
       body: formData,
     }
   );
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
@@ -98,23 +98,22 @@ const updateTeamMemberImage = async ({ id, formData }) => {
 const deleteTeamMember = async (id) => {
   const token = getToken();
   if (!token) {
-    throw new Error("Token is required");
+    throw new Error("You must be logged in to delete a team member");
   }
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/teammember/deleteTeamMember/" +
-      id,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+
+  const response = await fetch(`${import.meta.env.VITE_TEAM_DELETE}/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
   }
+  // return response.json();
 };
 
 export const TeamMembersProvider = ({ children }) => {

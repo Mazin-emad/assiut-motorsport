@@ -23,7 +23,7 @@ const achievements = [
   },
   {
     icon: <FaRocket className="w-8 h-8 text-red-600" />,
-    title: "Years Experience",
+    title: "Years of Experience",
     count: "+6",
     description: "Of Excellence",
   },
@@ -31,7 +31,7 @@ const achievements = [
 
 const About = () => {
   return (
-    <div className="bg-bgSection py-16">
+    <section id="about" className="bg-bgSection py-16">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <motion.h2
@@ -99,7 +99,7 @@ const About = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

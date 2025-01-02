@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import emailjs from "@emailjs/browser";
 import { motion } from "framer-motion";
 import {
   FaMapMarkerAlt,
@@ -10,32 +11,58 @@ import {
 } from "react-icons/fa";
 
 const ContactUs = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
+  const form = useRef();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
+  const sendEmail = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log(formData);
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const result = await emailjs.sendForm(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        form.current,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      );
+
+      if (result.text === "OK") {
+        setSuccess(true);
+        form.current.reset();
+      }
+    } catch (error) {
+      setError("Failed to send message. Please try again later.");
+      console.error("EmailJS Error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const socialLinks = [
-    { icon: <FaFacebook />, url: "#", label: "Facebook" },
-    { icon: <FaTwitter />, url: "#", label: "Twitter" },
-    { icon: <FaInstagram />, url: "#", label: "Instagram" },
-    { icon: <FaLinkedin />, url: "#", label: "LinkedIn" },
+    {
+      icon: <FaFacebook />,
+      url: "https://www.facebook.com/Assiut.Motorsport",
+      label: "Facebook",
+    },
+    {
+      icon: <FaTwitter />,
+      url: "https://x.com/AssiutMotorSPT",
+      label: "Twitter",
+    },
+    {
+      icon: <FaInstagram />,
+      url: "https://www.instagram.com/assiutmotorsporteg?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
+      label: "Instagram",
+    },
+    {
+      icon: <FaLinkedin />,
+      url: "https://www.linkedin.com/company/assiut-motorsport",
+      label: "LinkedIn",
+    },
   ];
 
   return (
@@ -72,87 +99,90 @@ const ContactUs = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <motion.form
+              ref={form}
+              onSubmit={sendEmail}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="space-y-6"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-textPrimary mb-1"
+                    className="block text-textPrimary font-medium mb-2"
                   >
-                    Your Name
+                    Name
                   </label>
                   <input
                     type="text"
                     id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
+                    name="user_name"
                     required
+                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
+                    placeholder="Your name"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-textPrimary mb-1"
+                    className="block text-textPrimary font-medium mb-2"
                   >
-                    Your Email
+                    Email
                   </label>
                   <input
                     type="email"
                     id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
+                    name="user_email"
                     required
+                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
+                    placeholder="Your email"
                   />
                 </div>
               </div>
-
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="block text-sm font-medium text-textPrimary mb-1"
-                >
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className="bg-textSecondary text-textPrimary w-full px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-border focus:border-transparent"
-                  required
-                />
-              </div>
-
               <div>
                 <label
                   htmlFor="message"
-                  className="block text-sm font-medium text-textPrimary mb-1"
+                  className="block text-textPrimary font-medium mb-2"
                 >
                   Message
                 </label>
                 <textarea
                   id="message"
                   name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows="5"
-                  className="bg-textSecondary text-textPrimary w-full px-4 py-2 border outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
                   required
+                  rows="5"
+                  className="bg-textSecondary text-textPrimary w-full px-4 py-2 border outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent resize-none"
+                  placeholder="Your message"
                 ></textarea>
               </div>
 
-              <button
-                type="submit"
-                className="mx-auto block md:w-[350px] px-6 py-3 bg-textPrimary text-bgSection rounded-lg hover:shadow-md hover:shadow-textSecondary transition-all duration-300"
-              >
-                Send Message
-              </button>
-            </form>
+              {error && <p className="text-red-500 text-center">{error}</p>}
+
+              {success && (
+                <p className="text-green-500 text-center">
+                  Message sent successfully!
+                </p>
+              )}
+
+              <div className="text-center">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="submit"
+                  disabled={loading}
+                  className={`mx-auto block md:w-[350px] px-6 py-3 bg-textPrimary text-bgSection rounded-lg transition-colors ${
+                    loading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:shadow-md hover:shadow-textSecondary"
+                  }`}
+                >
+                  {loading ? "Sending..." : "Send Message"}
+                </motion.button>
+              </div>
+            </motion.form>
           </div>
 
           <div className="space-y-8 lg:mt-10">
@@ -186,6 +216,7 @@ const ContactUs = () => {
             <div className="flex justify-around space-x-4">
               {socialLinks.map((social, index) => (
                 <a
+                  target="_blank"
                   key={index}
                   href={social.url}
                   className="p-3 bg-bgMain text-textSecondary rounded-lg hover:bg-border hover:text-bgMain transition-colors"
@@ -201,4 +232,5 @@ const ContactUs = () => {
     </section>
   );
 };
+
 export default ContactUs;
