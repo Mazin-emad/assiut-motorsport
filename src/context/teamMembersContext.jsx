@@ -44,7 +44,7 @@ const createTeamMember = async (formData) => {
   return response.json();
 };
 
-const updateTeamMemberText = async ({ id, name, title }) => {
+const updateTeamMemberText = async ({ id, name, title, description }) => {
   const token = getToken();
   if (!token) {
     throw new Error("You must be logged in to update a collection");
@@ -61,6 +61,7 @@ const updateTeamMemberText = async ({ id, name, title }) => {
       body: JSON.stringify({
         name,
         title,
+        description,
       }),
     }
   );

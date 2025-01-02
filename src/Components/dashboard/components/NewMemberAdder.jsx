@@ -73,10 +73,13 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
         id: member._id,
         name,
         title,
+        description: bio,
       });
-      const formData = new FormData();
-      formData.append("profileImage", image);
-      updateTeamMemberImage({ id: member._id, formData });
+      if (image) {
+        const formData = new FormData();
+        formData.append("profileImage", image);
+        updateTeamMemberImage({ id: member._id, formData });
+      }
     }
     if (!loading && !error) {
       onClose();
@@ -167,7 +170,6 @@ const NewMemberAdder = ({ onClose, member, isNew = false }) => {
               id="image"
               className="w-full bg-textSecondary text-bgMain placeholder-textPrimary px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-bgMain"
               accept="image/*"
-              required
             />
           </div>
 

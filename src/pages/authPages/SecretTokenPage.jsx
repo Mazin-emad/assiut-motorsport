@@ -39,7 +39,7 @@ const SecretTokenPage = () => {
         className="bg-white p-8 rounded shadow-lg w-full max-w-md"
       >
         <h1 className="text-3xl font-bold mb-6 text-center text-secondary">
-          Enter Secret Token
+          Enter Secret Key
         </h1>
         {!validateStatus.isLoading && validateStatus.error && (
           <div className="mb-4 text-red-500">
@@ -52,7 +52,7 @@ const SecretTokenPage = () => {
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-textPrimary"
-            placeholder="Your Secret Token"
+            placeholder="Your Secret Key"
             disabled={validateStatus.isLoading}
           />
         </div>

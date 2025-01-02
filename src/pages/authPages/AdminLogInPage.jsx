@@ -116,8 +116,8 @@ const AdminLogInPage = () => {
           </Link>
         </div>
         <div className="mt-4 text-center">
-          <Link to="/secret" className="text-bgSection hover:underline">
-            Forgot Password?
+          <Link to="/forget" className="text-bgSection hover:underline">
+            Forget Password?
           </Link>
         </div>
       </form>
