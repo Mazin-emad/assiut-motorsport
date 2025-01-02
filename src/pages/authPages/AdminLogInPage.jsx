@@ -3,21 +3,22 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
 import { saveTokenWithExpiration } from "../../context/localstorageAPI";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ADMIN_LOGIN_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_ADMIN_LOGIN
+}`;
 
 const login = async ({ email, password }) => {
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/login",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    }
-  );
+  const response = await fetch(ADMIN_LOGIN_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
 
   if (!response.ok) {
     const errorData = await response.json();

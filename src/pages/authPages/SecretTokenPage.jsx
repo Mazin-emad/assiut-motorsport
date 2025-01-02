@@ -22,7 +22,6 @@ const SecretTokenPage = () => {
 
     validateSecretKey(secret, {
       onSuccess: (data) => {
-        console.log("Validation successful, received data:", data);
         if (data && data.token) {
           setToken(data.token);
         } else {

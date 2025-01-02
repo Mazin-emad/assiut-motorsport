@@ -3,21 +3,22 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { saveTokenWithExpiration } from "../../context/localstorageAPI";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const REST_PASS_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_AUTH_RESET_PASSWORD
+}`;
 
 const restPass = async ({ email, newPassword }) => {
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/resetPassword",
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        newPassword,
-      }),
-    }
-  );
+  const response = await fetch(REST_PASS_ENDPOINT, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      newPassword,
+    }),
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -55,7 +56,6 @@ const RestPassPage = () => {
       { email, newPassword },
       {
         onSuccess: (data) => {
-          console.log("Password reset email sent successfully", data);
           saveTokenWithExpiration(data.token);
           navigate("/dashboard");
         },

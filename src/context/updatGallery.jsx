@@ -2,6 +2,13 @@ import { createContext, useContext } from "react";
 import PropTypes from "prop-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getToken } from "./localstorageAPI";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const GALLERY_UPDATE_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_GALLERY_UPDATE
+}`;
+const GALLERY_UPDATE_COVER_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_GALLERY_UPDATE_COVER
+}`;
 
 const UpdateGalleryContext = createContext();
 
@@ -10,17 +17,14 @@ const updateCollectionText = async ({ id, updatedCollection }) => {
   if (!token) {
     throw new Error("You must be logged in to update a collection");
   }
-  const response = await fetch(
-    `https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/updateTextData/${id}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(updatedCollection),
-    }
-  );
+  const response = await fetch(`${GALLERY_UPDATE_ENDPOINT}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(updatedCollection),
+  });
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -32,16 +36,13 @@ const updateCollectionCoverImage = async ({ id, formData }) => {
   if (!token) {
     throw new Error("You must be logged in to update a collection");
   }
-  const response = await fetch(
-    `https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/gallery/updateCoverImage/${id}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    }
-  );
+  const response = await fetch(`${GALLERY_UPDATE_COVER_ENDPOINT}/${id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }

@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const RESET_CODE_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_AUTH_RESET_PASSWORD
+}`;
 
 const verifyRestCode = async ({ resetCode }) => {
   const reqBody = JSON.stringify({ resetCode });
-  console.log("Request body:", reqBody);
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/verifyPasswordResetCode",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: reqBody,
-    }
-  );
+  const response = await fetch(RESET_CODE_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: reqBody,
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
@@ -41,8 +41,7 @@ const RestCodePage = () => {
     }
 
     try {
-      const data = await verifyRestCode({ resetCode });
-      console.log("Password reset code verified successfully", data);
+      await verifyRestCode({ resetCode });
       setLoading(false);
       navigate("/restpass", { state: { email } });
     } catch (error) {

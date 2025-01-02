@@ -14,7 +14,6 @@ const AdminSignUpPage = () => {
 
   useEffect(() => {
     if (!token) {
-      console.log("No token found, redirecting to secret page");
       navigate("/secret");
     }
   }, [token, navigate]);
@@ -57,7 +56,6 @@ const AdminSignUpPage = () => {
 
     signup(inputs, {
       onSuccess: (data) => {
-        console.log("Admin signed up successfully!", data);
         saveTokenWithExpiration(data.token);
         navigate("/dashboard");
       },

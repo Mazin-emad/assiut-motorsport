@@ -1,18 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const FORGET_PASS_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_AUTH_FORGET_PASSWORD
+}`;
 
 const forgetPass = async (email) => {
-  const response = await fetch(
-    "https://sport-production-f4dc.up.railway.app/assiutmotorsport/api/admin/forgetPassword",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    }
-  );
+  const response = await fetch(FORGET_PASS_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -30,8 +31,7 @@ const ForgetPassPage = () => {
 
   const forgetPassMutation = useMutation({
     mutationFn: forgetPass,
-    onSuccess: (data) => {
-      console.log("Password reset email sent successfully", data.message);
+    onSuccess: () => {
       navigate("/code", {
         state: { email },
       });

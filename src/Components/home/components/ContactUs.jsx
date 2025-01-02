@@ -21,7 +21,6 @@ const ContactUs = () => {
     setLoading(true);
     setError("");
     setSuccess(false);
-
     try {
       const result = await emailjs.sendForm(
         import.meta.env.VITE_EMAILJS_SERVICE_ID,
@@ -121,7 +120,7 @@ const ContactUs = () => {
                     id="name"
                     name="user_name"
                     required
-                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
+                    className="bg-textSecondary placeholder:text-bgMain/60 text-bgMain w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
                     placeholder="Your name"
                   />
                 </div>
@@ -137,7 +136,7 @@ const ContactUs = () => {
                     id="email"
                     name="user_email"
                     required
-                    className="bg-textSecondary text-textPrimary w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
+                    className="bg-textSecondary placeholder:text-bgMain/60 text-bgMain w-full px-4 py-2 outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent"
                     placeholder="Your email"
                   />
                 </div>
@@ -154,7 +153,7 @@ const ContactUs = () => {
                   name="message"
                   required
                   rows="5"
-                  className="bg-textSecondary text-textPrimary w-full px-4 py-2 border outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent resize-none"
+                  className="bg-textSecondary placeholder:text-bgMain/60 text-bgMain  w-full px-4 py-2 border outline-none rounded-lg focus:ring-2 focus:ring-border focus:border-transparent resize-none"
                   placeholder="Your message"
                 ></textarea>
               </div>

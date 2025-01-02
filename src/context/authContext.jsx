@@ -2,6 +2,14 @@ import PropTypes from "prop-types";
 import { createContext, useContext, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ADMIN_SIGNUP_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_ADMIN_SIGNUP
+}`;
+const SECRET_KEY_VALIDATE_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_AUTH_VALIDATE_SECRET
+}`;
+
 const AuthContext = createContext();
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
@@ -13,7 +21,7 @@ export const useAuth = () => {
 };
 
 const validateSecretKeyFetch = async (secretKey) => {
-  const response = await fetch(import.meta.env.VITE_AUTH_VALIDATE_SECRET, {
+  const response = await fetch(SECRET_KEY_VALIDATE_ENDPOINT, {
     headers: {
       "Content-Type": "application/json",
     },
@@ -35,7 +43,7 @@ async function signup({ name, email, password, passwordConfirm }, token) {
   }
 
   try {
-    const response = await fetch(import.meta.env.VITE_AUTH_SIGNUP, {
+    const response = await fetch(ADMIN_SIGNUP_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,10 +58,6 @@ async function signup({ name, email, password, passwordConfirm }, token) {
     });
 
     const responseData = await response.json();
-    console.log("Signup response:", {
-      status: response.status,
-      data: responseData,
-    });
 
     if (!response.ok) {
       if (responseData.error && Array.isArray(responseData.error)) {

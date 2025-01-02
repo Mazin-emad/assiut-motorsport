@@ -2,11 +2,27 @@ import { createContext, useContext } from "react";
 import PropTypes from "prop-types";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { getToken } from "./localstorageAPI";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const GALLERY_BASE_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_GALLERY_BASE
+}`;
+const GALLERY_CREATE_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_GALLERY_CREATE
+}`;
+const GALLERY_UPLOAD_IMAGES_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_GALLERY_UPLOAD_IMAGES
+}`;
+const GALLERY_DELETE_IMAGE_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_GALLERY_DELETE_IMAGE
+}`;
+const GALLERY_DELETE_ENDPOINT = `${API_BASE_URL}${
+  import.meta.env.VITE_GALLERY_DELETE
+}`;
 
 const GalleryContext = createContext();
 
 const fetchCollections = async () => {
-  const response = await fetch(import.meta.env.VITE_GALLERY_BASE);
+  const response = await fetch(GALLERY_BASE_ENDPOINT);
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -19,7 +35,7 @@ const createCollection = async (newCollection) => {
     throw new Error("You must be logged in to create a collection");
   }
 
-  const response = await fetch(import.meta.env.VITE_GALLERY_CREATE, {
+  const response = await fetch(GALLERY_CREATE_ENDPOINT, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -39,16 +55,13 @@ const uploadCollectionImages = async ({ id, formData }) => {
     throw new Error("You must be logged in to to create a collection");
   }
 
-  const response = await fetch(
-    `${import.meta.env.VITE_GALLERY_UPLOAD_IMAGES}/${id}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    }
-  );
+  const response = await fetch(`${GALLERY_UPLOAD_IMAGES_ENDPOINT}/${id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
@@ -62,17 +75,14 @@ const deleteSingleImage = async ({ id, url }) => {
     throw new Error("You must be logged in to delete an image");
   }
 
-  const response = await fetch(
-    `${import.meta.env.VITE_GALLERY_DELETE_IMAGE}/${id}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ gallery: url }),
-    }
-  );
+  const response = await fetch(`${GALLERY_DELETE_IMAGE_ENDPOINT}/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ gallery: url }),
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message);
@@ -85,7 +95,7 @@ const deleteCollection = async (id) => {
   if (!token) {
     throw new Error("You must be logged in to delete a collection");
   }
-  const response = await fetch(`${import.meta.env.VITE_GALLERY_DELETE}/${id}`, {
+  const response = await fetch(`${GALLERY_DELETE_ENDPOINT}/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
