@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ADMIN_SIGNUP_ENDPOINT = `${API_BASE_URL}${
-  import.meta.env.VITE_ADMIN_SIGNUP
+  import.meta.env.VITE_AUTH_SIGNUP
 }`;
 const SECRET_KEY_VALIDATE_ENDPOINT = `${API_BASE_URL}${
   import.meta.env.VITE_AUTH_VALIDATE_SECRET
