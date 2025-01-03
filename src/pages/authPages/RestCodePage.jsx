@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const RESET_CODE_ENDPOINT = `${API_BASE_URL}${
-  import.meta.env.VITE_AUTH_RESET_PASSWORD
+  import.meta.env.VITE_AUTH_VERIFY_RESET_CODE
 }`;
 
 const verifyRestCode = async ({ resetCode }) => {
